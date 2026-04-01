@@ -1,0 +1,388 @@
+{
+  "commands": [
+    {
+      "command": "/give",
+      "description": "Give items to a player or selector.",
+      "parameters": ["<targets>", "<item>", "[count]"],
+      "examples": ["/give @s diamond 64", "/give @a minecraft:bread 1"]
+    },
+    {
+      "command": "/summon",
+      "description": "Spawn an entity at a location.",
+      "parameters": ["<entity>", "[x y z]", "[nbt]"],
+      "examples": ["/summon zombie ~ ~ ~", "/summon creeper 0 64 0 {powered:1b}"]
+    },
+    {
+      "command": "/tp",
+      "description": "Teleport entities to a position or another entity.",
+      "parameters": ["<destination>", "[<targets> <destination>]"],
+      "examples": ["/tp @s 0 64 0", "/tp Steve @p", "/tp @a 100 64 200"]
+    },
+    {
+      "command": "/kill",
+      "description": "Kill entities. Defaults to the command source if no target given.",
+      "parameters": ["[targets]"],
+      "examples": ["/kill @e[type=zombie]", "/kill @s", "/kill @e[type=!player]"]
+    },
+    {
+      "command": "/effect",
+      "description": "Apply or clear status effects on entities.",
+      "parameters": ["give <targets> <effect> [duration] [amplifier] [hideParticles]", "clear [targets] [effect]"],
+      "examples": ["/effect give @s speed 60 2", "/effect give @a night_vision 999 0 true", "/effect clear @a"]
+    },
+    {
+      "command": "/enchant",
+      "description": "Enchant the item held by a player.",
+      "parameters": ["<targets> <enchantment> [level]"],
+      "examples": ["/enchant @s sharpness 5", "/enchant @p unbreaking 3", "/enchant @s looting 3"]
+    },
+    {
+      "command": "/gamemode",
+      "description": "Change the game mode of a player.",
+      "parameters": ["survival|creative|adventure|spectator [targets]"],
+      "examples": ["/gamemode creative", "/gamemode survival @a", "/gamemode spectator @s"]
+    },
+    {
+      "command": "/time",
+      "description": "Query or change the in-game time.",
+      "parameters": ["set <day|noon|night|midnight|0-24000>", "add <amount>", "query <daytime|gametime|day>"],
+      "examples": ["/time set day", "/time set 18000", "/time add 1000", "/time query gametime"]
+    },
+    {
+      "command": "/weather",
+      "description": "Change the weather in the current dimension.",
+      "parameters": ["clear|rain|thunder [duration]"],
+      "examples": ["/weather clear", "/weather thunder 6000", "/weather rain 12000"]
+    },
+    {
+      "command": "/setblock",
+      "description": "Place a block at a specific position.",
+      "parameters": ["<x y z> <block> [destroy|keep|replace]"],
+      "examples": ["/setblock ~ ~-1 ~ minecraft:stone", "/setblock 0 64 0 air", "/setblock ~ ~ ~ minecraft:chest keep"]
+    },
+    {
+      "command": "/fill",
+      "description": "Fill a rectangular region with a block.",
+      "parameters": ["<x1 y1 z1> <x2 y2 z2> <block> [destroy|hollow|keep|outline|replace]"],
+      "examples": ["/fill ~-5 ~ ~-5 ~5 ~5 ~5 stone", "/fill 0 0 0 100 255 100 air destroy", "/fill ~-3 ~-1 ~-3 ~3 ~-1 ~3 glass hollow"]
+    },
+    {
+      "command": "/clone",
+      "description": "Copy blocks from one region to another.",
+      "parameters": ["<x1 y1 z1> <x2 y2 z2> <destX destY destZ> [filtered|masked|replace] [force|move|normal]"],
+      "examples": ["/clone 0 0 0 10 10 10 20 0 20", "/clone ~-5 ~-1 ~-5 ~5 ~5 ~5 ~20 ~-1 ~-5 masked"]
+    },
+    {
+      "command": "/execute",
+      "description": "Run commands with conditions, as other entities, or at other positions.",
+      "parameters": ["as <entity> ...", "at <entity> ...", "in <dimension> ...", "if/unless block|entity|score ... run <command>", "positioned <x y z> ..."],
+      "examples": ["/execute as @a at @s run effect give @s speed 1", "/execute if block ~ ~-1 ~ grass_block run say On grass!", "/execute as @e[type=zombie] at @s run kill @s"]
+    },
+    {
+      "command": "/scoreboard",
+      "description": "Manage objectives, scores, and display slots.",
+      "parameters": ["objectives add <name> <criteria> [displayName]", "objectives setdisplay <slot> [objective]", "players set|add|remove <player> <obj> <score>", "players get <player> <obj>"],
+      "examples": ["/scoreboard objectives add deaths deathCount", "/scoreboard objectives setdisplay sidebar kills", "/scoreboard players set @s kills 0", "/scoreboard players add @s coins 10"]
+    },
+    {
+      "command": "/team",
+      "description": "Manage teams: create, delete, join, and set options.",
+      "parameters": ["add <name> [displayName]", "remove <name>", "join <name> [entities]", "leave [entities]", "option <name> <option> <value>"],
+      "examples": ["/team add red", "/team join red @s", "/team option red color red", "/team option red friendlyFire false"]
+    },
+    {
+      "command": "/title",
+      "description": "Display large on-screen text (title, subtitle, or actionbar).",
+      "parameters": ["<targets> title|subtitle|actionbar <json>", "<targets> times <fadeIn> <stay> <fadeOut>", "<targets> clear|reset"],
+      "examples": ["/title @a title {\"text\":\"Round Start!\",\"color\":\"gold\"}", "/title @s subtitle {\"text\":\"Good luck\"}", "/title @a times 10 70 20"]
+    },
+    {
+      "command": "/tellraw",
+      "description": "Send formatted JSON text to players (supports click/hover events).",
+      "parameters": ["<targets> <rawJSON>"],
+      "examples": ["/tellraw @a {\"text\":\"Welcome!\",\"color\":\"green\"}", "/tellraw @s [{\"text\":\"Score: \"},{\"score\":{\"name\":\"@s\",\"objective\":\"kills\"}}]"]
+    },
+    {
+      "command": "/say",
+      "description": "Broadcast a message to all players as the server or command block.",
+      "parameters": ["<message>"],
+      "examples": ["/say Server restarting in 60 seconds!", "/say Welcome to the server."]
+    },
+    {
+      "command": "/msg",
+      "description": "Send a private message to a player. Aliases: /tell, /w.",
+      "parameters": ["<targets> <message>"],
+      "examples": ["/msg Steve Hey, meet me at spawn!", "/tell @p Your package is ready."]
+    },
+    {
+      "command": "/clear",
+      "description": "Remove items from inventories.",
+      "parameters": ["[targets] [item] [maxCount]"],
+      "examples": ["/clear @s", "/clear @a minecraft:dirt", "/clear @s minecraft:arrow 32"]
+    },
+    {
+      "command": "/gamerule",
+      "description": "Query or set a game rule. Common rules: keepInventory, doDaylightCycle, doMobSpawning.",
+      "parameters": ["<rule> [value]"],
+      "examples": ["/gamerule keepInventory true", "/gamerule doDaylightCycle false", "/gamerule doMobSpawning false", "/gamerule pvp false"]
+    },
+    {
+      "command": "/difficulty",
+      "description": "Set the world difficulty.",
+      "parameters": ["peaceful|easy|normal|hard"],
+      "examples": ["/difficulty peaceful", "/difficulty normal", "/difficulty hard"]
+    },
+    {
+      "command": "/spawnpoint",
+      "description": "Set the respawn point for one or more players.",
+      "parameters": ["[targets] [x y z] [angle]"],
+      "examples": ["/spawnpoint @s ~ ~ ~", "/spawnpoint @a 0 64 0"]
+    },
+    {
+      "command": "/setworldspawn",
+      "description": "Set the default world spawn for all new players.",
+      "parameters": ["[x y z] [angle]"],
+      "examples": ["/setworldspawn 0 64 0", "/setworldspawn ~ ~ ~"]
+    },
+    {
+      "command": "/locate",
+      "description": "Find the nearest structure, biome, or point of interest.",
+      "parameters": ["structure <structure>", "biome <biome>", "poi <poi>"],
+      "examples": ["/locate structure village", "/locate structure stronghold", "/locate biome minecraft:desert", "/locate poi minecraft:lodestone"]
+    },
+    {
+      "command": "/worldborder",
+      "description": "Manage the world border: size, center, and damage settings.",
+      "parameters": ["set <distance> [seconds]", "center <x z>", "add <distance> [seconds]", "damage amount|buffer <value>", "get", "warning time|distance <value>"],
+      "examples": ["/worldborder set 1000", "/worldborder center 0 0", "/worldborder set 500 60", "/worldborder damage amount 0.2"]
+    },
+    {
+      "command": "/bossbar",
+      "description": "Create and manage boss bars shown at the top of the screen.",
+      "parameters": ["add <id> <name>", "remove <id>", "set <id> value|max|color|style|visible|name|players <value>", "get <id> value|max|visible|players"],
+      "examples": ["/bossbar add mybar {\"text\":\"Quest Progress\"}", "/bossbar set mybar value 50", "/bossbar set mybar max 100", "/bossbar set mybar color blue"]
+    },
+    {
+      "command": "/loot",
+      "description": "Distribute items from a loot table to players or a container.",
+      "parameters": ["give <players> loot|fish|kill|mine <source>", "insert <pos> ..."],
+      "examples": ["/loot give @s loot minecraft:chests/simple_dungeon", "/loot give @p kill minecraft:pig", "/loot insert ~ ~ ~ mine ~ ~-1 ~ minecraft:diamond_pickaxe"]
+    },
+    {
+      "command": "/data",
+      "description": "Read, modify, or delete NBT data of entities, block entities, or storage.",
+      "parameters": ["get entity|block|storage <target> [path] [scale]", "merge entity|block|storage <target> <nbt>", "modify entity|block|storage <target> <path> set|merge|append ...", "remove entity|block|storage <target> <path>"],
+      "examples": ["/data get entity @s Health", "/data merge entity @s {NoGravity:1b}", "/data remove entity @s CustomName", "/data modify entity @s CustomName set value {\"text\":\"Boss\"}"]
+    },
+    {
+      "command": "/attribute",
+      "description": "Query or modify entity attribute base values and modifiers.",
+      "parameters": ["<target> <attribute> get [scale]", "<target> <attribute> base get|set <value>", "<target> <attribute> modifier add|remove|value ..."],
+      "examples": ["/attribute @s minecraft:generic.max_health get", "/attribute @s minecraft:generic.max_health base set 40", "/attribute @s minecraft:generic.movement_speed base set 0.15"]
+    },
+    {
+      "command": "/particle",
+      "description": "Spawn a particle effect at a location.",
+      "parameters": ["<particle> [x y z] [dx dy dz] [speed] [count] [force|normal] [viewers]"],
+      "examples": ["/particle minecraft:flame ~ ~1 ~ 0.5 0.5 0.5 0.1 50", "/particle minecraft:explosion ~ ~ ~ 0 0 0 1 1 force", "/particle minecraft:end_rod ~ ~2 ~ 0.3 0.5 0.3 0.05 100"]
+    },
+    {
+      "command": "/playsound",
+      "description": "Play a sound event for players at a location.",
+      "parameters": ["<sound> <source> <targets> [x y z] [volume] [pitch] [minVolume]"],
+      "examples": ["/playsound minecraft:entity.player.levelup master @a", "/playsound minecraft:block.note_block.pling record @s ~ ~ ~ 1 2", "/playsound minecraft:entity.ender_dragon.death ambient @a ~ ~ ~ 5"]
+    },
+    {
+      "command": "/stopsound",
+      "description": "Stop specific or all sounds for players.",
+      "parameters": ["<targets> [source] [sound]"],
+      "examples": ["/stopsound @a", "/stopsound @s music", "/stopsound @a * minecraft:music.game"]
+    },
+    {
+      "command": "/tag",
+      "description": "Add or remove string tags on entities for use in target selectors with @e[tag=...].",
+      "parameters": ["<targets> add|remove <name>", "<targets> list"],
+      "examples": ["/tag @s add boss", "/tag @e[tag=boss] remove boss", "/tag @s list"]
+    },
+    {
+      "command": "/advancement",
+      "description": "Grant or revoke advancements and criteria for players.",
+      "parameters": ["grant|revoke <targets> everything", "grant|revoke <targets> only|from|until|through <advancement> [criterion]"],
+      "examples": ["/advancement grant @s everything", "/advancement revoke @a everything", "/advancement grant @s only minecraft:story/mine_stone"]
+    },
+    {
+      "command": "/recipe",
+      "description": "Grant or revoke crafting recipes for players.",
+      "parameters": ["give|take <targets> <recipe>|*"],
+      "examples": ["/recipe give @a *", "/recipe take @s minecraft:diamond_sword", "/recipe give @s minecraft:elytra"]
+    },
+    {
+      "command": "/experience",
+      "description": "Add, set, or query experience for players. Alias: /xp.",
+      "parameters": ["add <targets> <amount> [levels|points]", "set <targets> <amount> [levels|points]", "query <target> levels|points"],
+      "examples": ["/experience add @s 10 levels", "/experience set @s 0 levels", "/xp add @a 500 points", "/experience query @s levels"]
+    },
+    {
+      "command": "/seed",
+      "description": "Display the current world seed. Only ops can see it in multiplayer.",
+      "parameters": [],
+      "examples": ["/seed"]
+    },
+    {
+      "command": "/reload",
+      "description": "Reload all data packs (loot tables, functions, advancements, tags, recipes).",
+      "parameters": [],
+      "examples": ["/reload"]
+    },
+    {
+      "command": "/function",
+      "description": "Execute a .mcfunction file from a loaded data pack.",
+      "parameters": ["<namespace:path>"],
+      "examples": ["/function mynamespace:setup", "/function mynamespace:tick", "/function minecraft:load"]
+    },
+    {
+      "command": "/schedule",
+      "description": "Schedule a function to run after a delay.",
+      "parameters": ["function <function> <time>[t|s|d] [append|replace]", "clear <function>"],
+      "examples": ["/schedule function ns:reset 200t replace", "/schedule function ns:daily 24000t", "/schedule clear ns:reset"]
+    },
+    {
+      "command": "/datapack",
+      "description": "Enable, disable, or list data packs in the world.",
+      "parameters": ["enable <pack> [first|last|before|after ...]", "disable <pack>", "list [enabled|available]"],
+      "examples": ["/datapack list", "/datapack enable \"file/mypack\"", "/datapack disable \"file/oldpack\""]
+    },
+    {
+      "command": "/item",
+      "description": "Replace or modify items in inventories, equipment slots, or containers.",
+      "parameters": ["replace entity|block <target> <slot> with <item> [count]", "modify entity|block <target> <slot> <modifier>"],
+      "examples": ["/item replace entity @s weapon.mainhand with diamond_sword", "/item replace block ~ ~ ~ container.0 with apple 32", "/item replace entity @s armor.head with diamond_helmet"]
+    },
+    {
+      "command": "/ride",
+      "description": "Make an entity mount or dismount a vehicle.",
+      "parameters": ["<target> mount <vehicle>", "<target> dismount"],
+      "examples": ["/ride @s mount @e[type=horse,limit=1,sort=nearest]", "/ride @e[type=zombie] mount @e[type=spider,limit=1]", "/ride @s dismount"]
+    },
+    {
+      "command": "/spreadplayers",
+      "description": "Teleport entities to random positions within an area.",
+      "parameters": ["<centerX> <centerZ> <spreadDist> <maxRange> [under <maxHeight>] <respectTeams> <targets>"],
+      "examples": ["/spreadplayers 0 0 5 100 false @a", "/spreadplayers 0 0 10 200 under 80 false @e[type=player]"]
+    },
+    {
+      "command": "/defaultgamemode",
+      "description": "Set the default game mode for new players joining the world.",
+      "parameters": ["survival|creative|adventure|spectator"],
+      "examples": ["/defaultgamemode survival", "/defaultgamemode adventure"]
+    },
+    {
+      "command": "/difficulty",
+      "description": "Change the world difficulty (affects mob spawning and damage).",
+      "parameters": ["peaceful|easy|normal|hard"],
+      "examples": ["/difficulty peaceful", "/difficulty hard"]
+    },
+    {
+      "command": "/ban",
+      "description": "Ban a player by username, preventing them from joining.",
+      "parameters": ["<player> [reason]"],
+      "examples": ["/ban Steve Cheating", "/ban Player123 Harassment"]
+    },
+    {
+      "command": "/ban-ip",
+      "description": "Ban an IP address from joining the server.",
+      "parameters": ["<address|player> [reason]"],
+      "examples": ["/ban-ip 192.168.1.1", "/ban-ip Steve IP ban"]
+    },
+    {
+      "command": "/kick",
+      "description": "Disconnect a player from the server.",
+      "parameters": ["<player> [reason]"],
+      "examples": ["/kick Steve AFK too long", "/kick Player123 Bye!"]
+    },
+    {
+      "command": "/op",
+      "description": "Give operator (admin) permissions to a player.",
+      "parameters": ["<player>"],
+      "examples": ["/op Steve", "/op Player123"]
+    },
+    {
+      "command": "/deop",
+      "description": "Remove operator permissions from a player.",
+      "parameters": ["<player>"],
+      "examples": ["/deop Steve", "/deop Player123"]
+    },
+    {
+      "command": "/whitelist",
+      "description": "Manage the server whitelist. Only whitelisted players can join when enabled.",
+      "parameters": ["on|off|list|reload", "add|remove <player>"],
+      "examples": ["/whitelist on", "/whitelist add Steve", "/whitelist remove Player123", "/whitelist list"]
+    },
+    {
+      "command": "/list",
+      "description": "Show online players. Use 'uuids' to also show player UUIDs.",
+      "parameters": ["[uuids]"],
+      "examples": ["/list", "/list uuids"]
+    },
+    {
+      "command": "/help",
+      "description": "Show usage information for a command.",
+      "parameters": ["[command]"],
+      "examples": ["/help", "/help give", "/help execute"]
+    },
+    {
+      "command": "/debug",
+      "description": "Start or stop a debug profiling session to measure server performance.",
+      "parameters": ["start|stop|function <name>"],
+      "examples": ["/debug start", "/debug stop"]
+    },
+    {
+      "command": "/perf",
+      "description": "Run a 10-second performance report (ops only). Saves a report to disk.",
+      "parameters": ["start|stop"],
+      "examples": ["/perf start", "/perf stop"]
+    },
+    {
+      "command": "/forceload",
+      "description": "Force specific chunks to stay loaded even without players nearby.",
+      "parameters": ["add <from> [to]", "remove <from> [to]|all", "query [pos]"],
+      "examples": ["/forceload add 0 0", "/forceload add ~-2 ~-2 ~2 ~2", "/forceload remove all"]
+    },
+    {
+      "command": "/place",
+      "description": "Place a structure, jigsaw, feature, or template at a location.",
+      "parameters": ["feature|jigsaw|structure|template <id> [x y z]"],
+      "examples": ["/place structure minecraft:village/plains/town_center ~ ~ ~", "/place feature minecraft:desert_well ~ ~ ~"]
+    },
+    {
+      "command": "/fillbiome",
+      "description": "Change the biome type in a region (visual/gameplay effects only).",
+      "parameters": ["<x1 y1 z1> <x2 y2 z2> <biome>"],
+      "examples": ["/fillbiome ~-5 ~ ~-5 ~5 ~5 ~5 minecraft:desert", "/fillbiome 0 0 0 100 255 100 minecraft:mushroom_fields"]
+    },
+    {
+      "command": "/rotate",
+      "description": "Rotate an entity to face a specific direction.",
+      "parameters": ["<target> <yRot> <xRot>", "<target> facing <entity|position>"],
+      "examples": ["/rotate @s 90 0", "/rotate @s facing 0 64 0"]
+    },
+    {
+      "command": "/spectate",
+      "description": "Make a spectator player spectate a specific entity.",
+      "parameters": ["[target] [spectator]"],
+      "examples": ["/spectate @e[type=zombie,limit=1]", "/spectate @e[type=ender_dragon,limit=1] @s"]
+    },
+    {
+      "command": "/trigger",
+      "description": "Allow players to change the value of a trigger-type scoreboard objective.",
+      "parameters": ["<objective> [add|set <value>]"],
+      "examples": ["/trigger vote add 1", "/trigger warp set 3"]
+    },
+    {
+      "command": "/return",
+      "description": "Exit a function early and optionally return a value to the caller.",
+      "parameters": ["<value>", "fail|run <command>"],
+      "examples": ["/return 1", "/return fail", "/return run give @s apple"]
+    }
+  ]
+}

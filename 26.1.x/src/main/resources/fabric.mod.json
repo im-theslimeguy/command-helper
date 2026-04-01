@@ -1,0 +1,40 @@
+{
+	"schemaVersion": 1,
+	"id": "command-helper",
+	"version": "${version}",
+	"name": "Command Helper",
+	"description": "This mod helps players who want to explore the versatility of Minecraft commands without reading long documentation.",
+	"authors": [
+		"Beef",
+		"Capybarabeef Studios under Miljö AB"
+	],
+	"contact": {
+		"homepage": "https://modrinth.com/project/command-helper",
+		"sources": "https://github.com/im-theslimeguy/command-helper",
+		"issues": "https://github.com/im-theslimeguy/command-helper/issues"
+	},
+	"license": "MIT",
+	"icon": "assets/command-helper/ch_logo.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"se.miljo.beef.CommandHelper"
+		],
+		"client": [
+			"se.miljo.beef.CommandHelperClient"
+		]
+	},
+	"mixins": [
+		"command-helper.mixins.json",
+		{
+			"config": "command-helper.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.18.5",
+		"minecraft": "~26.1",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
