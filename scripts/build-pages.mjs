@@ -7,6 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, "..");
 const outputDir = path.join(projectRoot, ".pages");
+const wikiDir = path.join(projectRoot, "wiki");
 
 async function copyRootSite() {
   await mkdir(outputDir, { recursive: true });
@@ -49,3 +50,5 @@ function runDocsBuild() {
 await rm(outputDir, { recursive: true, force: true });
 await copyRootSite();
 await runDocsBuild();
+await rm(wikiDir, { recursive: true, force: true });
+await cp(path.join(outputDir, "wiki"), wikiDir, { recursive: true });

@@ -1,6 +1,7 @@
 const isPagesBuild = process.env.BUILD_TARGET === "pages";
 const repoName = "command-helper";
 const siteRoot = isPagesBuild ? `/${repoName}/` : "/";
+const homeLink = isPagesBuild ? "../" : "/";
 
 export default {
   lang: "en-US",
@@ -10,7 +11,7 @@ export default {
   ...(isPagesBuild ? { outDir: "../.pages/wiki" } : {}),
   themeConfig: {
     nav: [
-      { text: "Home", link: siteRoot },
+      { text: "Home", link: homeLink },
       { text: "Wiki", link: "/" }
     ],
     sidebar: [
