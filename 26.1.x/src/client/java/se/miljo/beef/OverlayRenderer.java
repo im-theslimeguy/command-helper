@@ -19,6 +19,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -27,6 +28,17 @@ import net.minecraft.util.Mth;
 import org.lwjgl.glfw.GLFW;
 
 public final class OverlayRenderer {
+
+	private record BubbleSeg(AIAssistantState.Role role, int bw, int bh, List<FormattedCharSequence> lines) {}
+	private record BubbleLayout(
+			int index,
+			AIAssistantState.Role role,
+			String rawText,
+			int x,
+			int y,
+			int w,
+			int h,
+			List<FormattedCharSequence> lines) {}
 
 	// -------------------------------------------------------------------------
 	// Constants — original tooltip
@@ -127,6 +139,10 @@ public final class OverlayRenderer {
 
 	/** Vanilla {@link EditBox} registered on {@link ChatScreen} for real focus, typing, and selection. */
 	private EditBox aiChatInput;
+	/** Inline selectable textbox shown in-place of one AI bubble. */
+	private MultiLineEditBox aiBubbleTextBox;
+	private int aiBubbleTextBoxIndex = -1;
+	private int aiBubbleTextBoxX, aiBubbleTextBoxY, aiBubbleTextBoxW, aiBubbleTextBoxH;
 	/** AI chat panel bounds (GUI px) for click-through vs consume. */
 	private int aiWinX, aiWinY, aiWinW, aiWinH;
 	private boolean aiChatPendingFocus;
@@ -151,11 +167,9 @@ public final class OverlayRenderer {
 		if (INSTANCE == null) return false;
 		AIAssistantState st = AIAssistantState.get();
 		if (!st.state.isAiWindowActive()) return false;
-		EditBox box = INSTANCE.aiChatInput;
 		if (screen instanceof ChatScreen cs
-				&& box != null
 				&& st.state == AIAssistantState.State.READY
-				&& cs.getFocused() == box) {
+				&& (cs.getFocused() == INSTANCE.aiChatInput || cs.getFocused() == INSTANCE.aiBubbleTextBox)) {
 			return false;
 		}
 		return true;
@@ -173,6 +187,11 @@ public final class OverlayRenderer {
 		int[] p = ClientUiHelper.mouseToGuiScaled(mouseX, mouseY);
 		int mx = p[0];
 		int my = p[1];
+		if (INSTANCE.aiBubbleTextBox != null
+				&& inRect(mx, my, INSTANCE.aiBubbleTextBoxX, INSTANCE.aiBubbleTextBoxY,
+					INSTANCE.aiBubbleTextBoxW, INSTANCE.aiBubbleTextBoxH)) {
+			return false;
+		}
 		int mw = INSTANCE.aiMsgAreaX2 - INSTANCE.aiMsgAreaX;
 		int mh = INSTANCE.aiMsgAreaBottom - INSTANCE.aiMsgAreaTop;
 		if (mw <= 0 || mh <= 0 || !inRect(mx, my, INSTANCE.aiMsgAreaX, INSTANCE.aiMsgAreaTop, mw, mh)) {
@@ -303,6 +322,9 @@ public final class OverlayRenderer {
 		if (!st.state.isAiWindowActive() && aiChatInput != null) {
 			removeAiChatInput();
 		}
+		if (!st.state.isAiWindowActive() && aiBubbleTextBox != null) {
+			removeAiBubbleTextBox();
+		}
 
 		if (aiChatPendingFocus
 				&& st.state == AIAssistantState.State.READY
@@ -389,6 +411,7 @@ public final class OverlayRenderer {
 		if (fatal) {
 			AIAssistantState.get().reset();
 			removeAiChatInput();
+			removeAiBubbleTextBox();
 		} else {
 			AIAssistantState.get().state = AIAssistantState.State.READY;
 		}
@@ -445,17 +468,52 @@ public final class OverlayRenderer {
 		if (st.state.isAiWindowActive() && st.state != AIAssistantState.State.INITIALIZING) {
 			if (inRect(mx, my, aiWinX, aiWinY, aiWinW, aiWinH)) {
 				int pad = 3;
+				if (aiBubbleTextBox != null
+						&& inRect(mx, my, aiBubbleTextBoxX, aiBubbleTextBoxY, aiBubbleTextBoxW, aiBubbleTextBoxH)) {
+					focusAiBubbleTextBox();
+					return true;
+				}
+				// Kattintás az input doboz környékén: fókusz be.
 				if (inRect(mx, my, inputBoxX - pad, inputBoxY - pad,
 						inputBoxW + pad * 2, INPUT_BOX_H + pad * 2)) {
+					removeAiBubbleTextBox();
 					focusAiChatInput();
 					return true;
 				}
-				// Buborék / üzenet sáv: ne essen át a háttér chatre; a fókuszt megtartjuk (görgetéshez se kell kikattintani).
+				// Kattintás egy AI buborékra: inline kijelölhető textbox ugyanott.
+				if (openAiBubbleTextBoxIfHit(mx, my)) {
+					return false;
+				}
+				// Kattintás az AI ablakon belül, de se input, se buborék: fókusz ki, és a click ne essen át.
+				if (aiChatInput != null) {
+					aiChatInput.setFocused(false);
+				}
+				removeAiBubbleTextBox();
 				return false;
 			}
+			// AI ablak nyitva van, de a saját rectjén kívül kattintottunk:
+			// engedjük tovább a clicket a ChatScreen-nek (pl. másik widgetre).
 			return true;
 		}
 		return true;
+	}
+
+	private boolean openAiBubbleTextBoxIfHit(int mx, int my) {
+		AIAssistantState st = AIAssistantState.get();
+		if (st.getHistory().isEmpty()) return false;
+
+		Minecraft mc = Minecraft.getInstance();
+		List<BubbleLayout> layout = buildBubbleLayout(mc.font, st, aiWinX, aiWinY, aiWinW, aiWinH);
+		for (BubbleLayout bubble : layout) {
+			if (inRect(mx, my, bubble.x(), bubble.y(), bubble.w(), bubble.h())) {
+				if (bubble.role() == AIAssistantState.Role.AI) {
+					ensureAiBubbleTextBox(mc, bubble);
+					return true;
+				}
+				return false;
+			}
+		}
+		return false;
 	}
 
 	// -------------------------------------------------------------------------
@@ -465,9 +523,18 @@ public final class OverlayRenderer {
 		AIAssistantState st = AIAssistantState.get();
 		if (!st.state.isAiWindowActive()) return true;
 		if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
+			if (aiBubbleTextBox != null) {
+				removeAiBubbleTextBox();
+				focusAiChatInput();
+				return false;
+			}
 			st.reset();
 			removeAiChatInput();
+			removeAiBubbleTextBox();
 			return false;
+		}
+		if (aiBubbleTextBox != null && aiBubbleTextBox.isFocused()) {
+			return true;
 		}
 		EditBox box = aiChatInput;
 		if (box != null && box.isFocused() && st.state == AIAssistantState.State.READY) {
@@ -494,6 +561,7 @@ public final class OverlayRenderer {
 		st.addMessage(AIAssistantState.Role.USER, text);
 		st.aiChatScrollPx = 0;
 		aiChatInput.setValue("");
+		removeAiBubbleTextBox();
 		st.lastSentMs = System.currentTimeMillis();
 		st.state = AIAssistantState.State.WAITING_RESPONSE;
 
@@ -520,6 +588,22 @@ public final class OverlayRenderer {
 		aiChatInput = null;
 	}
 
+	private void removeAiBubbleTextBox() {
+		aiBubbleTextBoxIndex = -1;
+		aiBubbleTextBoxX = 0;
+		aiBubbleTextBoxY = 0;
+		aiBubbleTextBoxW = 0;
+		aiBubbleTextBoxH = 0;
+		if (aiBubbleTextBox != null && Minecraft.getInstance().screen instanceof ChatScreen cs) {
+			try {
+				Screens.getWidgets(cs).remove(aiBubbleTextBox);
+			} catch (Exception ignored) {
+				// Widget list may have been cleared on resize.
+			}
+		}
+		aiBubbleTextBox = null;
+	}
+
 	private void attachAiChatInput(ChatScreen cs) {
 		if (aiChatInput == null) return;
 		try {
@@ -529,6 +613,18 @@ public final class OverlayRenderer {
 			}
 		} catch (Exception e) {
 			CommandHelper.LOGGER.warn("CH: could not attach AI EditBox: {}", e.getMessage());
+		}
+	}
+
+	private void attachAiBubbleTextBox(ChatScreen cs) {
+		if (aiBubbleTextBox == null) return;
+		try {
+			var widgets = Screens.getWidgets(cs);
+			if (!widgets.contains(aiBubbleTextBox)) {
+				widgets.add(aiBubbleTextBox);
+			}
+		} catch (Exception e) {
+			CommandHelper.LOGGER.warn("CH: could not attach AI bubble textbox: {}", e.getMessage());
 		}
 	}
 
@@ -550,6 +646,22 @@ public final class OverlayRenderer {
 		cs.setFocused(aiChatInput);
 	}
 
+	private void focusAiBubbleTextBox() {
+		Minecraft mc = Minecraft.getInstance();
+		if (!(mc.screen instanceof ChatScreen cs) || aiBubbleTextBox == null) {
+			return;
+		}
+		try {
+			if (aiChatInput != null) {
+				aiChatInput.setFocused(false);
+			}
+		} catch (Exception ignored) {
+			// Keep trying to focus the bubble textbox.
+		}
+		aiBubbleTextBox.setFocused(true);
+		cs.setFocused(aiBubbleTextBox);
+	}
+
 	private void ensureAiChatInput(Minecraft mc, int x, int y, int w, int h, AIAssistantState st) {
 		if (aiChatInput == null) {
 			aiChatInput = new EditBox(mc.font, x, y, w, h, Component.literal("AI message"));
@@ -568,6 +680,42 @@ public final class OverlayRenderer {
 		aiChatInput.setEditable(st.state == AIAssistantState.State.READY);
 		if (mc.screen instanceof ChatScreen cs) {
 			attachAiChatInput(cs);
+		}
+	}
+
+	private void ensureAiBubbleTextBox(Minecraft mc, BubbleLayout bubble) {
+		String plainText = MarkdownLite.toComponent(bubble.rawText()).getString();
+		if (aiBubbleTextBox == null || aiBubbleTextBoxIndex != bubble.index()) {
+			removeAiBubbleTextBox();
+			aiBubbleTextBox = MultiLineEditBox.builder()
+				.setX(bubble.x())
+				.setY(bubble.y())
+				.setPlaceholder(Component.literal("AI answer"))
+				.setTextColor(0xFFEEEEEE)
+				.setTextShadow(false)
+				.setCursorColor(0xFFFFFFFF)
+				.setShowBackground(true)
+				.setShowDecorations(true)
+				.build(mc.font, bubble.w(), bubble.h(), Component.literal("AI answer"));
+			aiBubbleTextBox.setCharacterLimit(MAX_INPUT_CHARS * 8);
+			aiBubbleTextBox.setLineLimit(10_000);
+			aiBubbleTextBox.setValue(plainText);
+			aiBubbleTextBoxIndex = bubble.index();
+			if (mc.screen instanceof ChatScreen cs) {
+				attachAiBubbleTextBox(cs);
+			}
+			focusAiBubbleTextBox();
+		}
+		aiBubbleTextBoxX = bubble.x();
+		aiBubbleTextBoxY = bubble.y();
+		aiBubbleTextBoxW = bubble.w();
+		aiBubbleTextBoxH = bubble.h();
+		aiBubbleTextBox.setX(bubble.x());
+		aiBubbleTextBox.setY(bubble.y());
+		aiBubbleTextBox.setWidth(bubble.w());
+		aiBubbleTextBox.setHeight(bubble.h());
+		if (mc.screen instanceof ChatScreen cs) {
+			attachAiBubbleTextBox(cs);
 		}
 	}
 
@@ -814,10 +962,26 @@ public final class OverlayRenderer {
 
 		if (st.state == AIAssistantState.State.INITIALIZING) {
 			removeAiChatInput();
+			removeAiBubbleTextBox();
 			drawPanel(gg, winX, winY, ww, winH);
 			renderInitializing(gg, winX, winY, ww, winH, mc, st);
 		} else {
-			drawAiPanelWithHole(gg, winX, winY, ww, winH, ibX, ibY, ibW, INPUT_BOX_H);
+			List<BubbleLayout> layout = buildBubbleLayout(mc.font, st, winX, winY, ww, winH);
+			BubbleLayout selectedBubble = null;
+			for (BubbleLayout bubble : layout) {
+				if (bubble.index() == aiBubbleTextBoxIndex) {
+					selectedBubble = bubble;
+					break;
+				}
+			}
+			drawAiPanelWithHole(
+				gg, winX, winY, ww, winH,
+				ibX, ibY, ibW, INPUT_BOX_H,
+				selectedBubble == null ? -1 : selectedBubble.x(),
+				selectedBubble == null ? -1 : selectedBubble.y(),
+				selectedBubble == null ? 0 : selectedBubble.w(),
+				selectedBubble == null ? 0 : selectedBubble.h()
+			);
 			renderChatContent(gg, mx, my, tickDelta, winX, winY, ww, winH, winX2, winY2, mc, st);
 		}
 	}
@@ -867,8 +1031,75 @@ public final class OverlayRenderer {
 			drawTextReflective(gg, font, st.getLoadingDots(), wx + pad, dotsAreaY, 0xFFAAAAAA);
 		}
 
+		List<BubbleLayout> layout = buildBubbleLayout(font, st, wx, wy, ww, wh);
+		if (aiBubbleTextBoxIndex >= 0) {
+			BubbleLayout selectedBubble = null;
+			for (BubbleLayout bubble : layout) {
+				if (bubble.index() == aiBubbleTextBoxIndex && bubble.role() == AIAssistantState.Role.AI) {
+					selectedBubble = bubble;
+					break;
+				}
+			}
+			if (selectedBubble != null) {
+				ensureAiBubbleTextBox(mc, selectedBubble);
+			} else {
+				removeAiBubbleTextBox();
+			}
+		} else {
+			removeAiBubbleTextBox();
+		}
+
+		int totalH = 0;
+		for (int i = 0; i < layout.size(); i++) {
+			totalH += layout.get(i).h();
+			if (i < layout.size() - 1) {
+				totalH += 3;
+			}
+		}
+
+		int viewportH = Math.max(0, msgAreaBottom - msgAreaTop);
+		aiChatScrollMax = Math.max(0, totalH - viewportH);
+		st.aiChatScrollPx = Mth.clamp(st.aiChatScrollPx, 0, aiChatScrollMax);
+
+		gg.enableScissor(wx, msgAreaTop, wx2, msgAreaBottom);
+		for (BubbleLayout bubble : layout) {
+			if (bubble.index() == aiBubbleTextBoxIndex && bubble.role() == AIAssistantState.Role.AI) {
+				continue;
+			}
+			if (bubble.role() == AIAssistantState.Role.USER) {
+				gg.fill(bubble.x(), bubble.y(), bubble.x() + bubble.w(), bubble.y() + bubble.h(), 0xFF1A3A5C);
+				for (int j = 0; j < bubble.lines().size(); j++) {
+					gg.text(font, bubble.lines().get(j), bubble.x() + BUBBLE_PAD,
+						bubble.y() + BUBBLE_PAD + j * (LINE_H + 1), 0xFFDDEEFF);
+				}
+			} else {
+				gg.fill(bubble.x(), bubble.y(), bubble.x() + bubble.w(), bubble.y() + bubble.h(), 0xFF2A2A2A);
+				for (int j = 0; j < bubble.lines().size(); j++) {
+					gg.text(font, bubble.lines().get(j), bubble.x() + BUBBLE_PAD,
+						bubble.y() + BUBBLE_PAD + j * (LINE_H + 1), 0xFFEEEEEE);
+				}
+			}
+		}
+		gg.disableScissor();
+
+		String inputStr = aiChatInput != null ? aiChatInput.getValue() : "";
+		if (inputStr.length() > MAX_INPUT_CHARS - 50) {
+			String counter = inputStr.length() + "/" + MAX_INPUT_CHARS;
+			int cw = font.width(counter);
+			int textY = ibY + (INPUT_BOX_H - font.lineHeight) / 2;
+			drawTextReflective(gg, font, counter, ibX + ibW - cw - 4, textY, 0xFFFF5555);
+		}
+	}
+
+	private List<BubbleLayout> buildBubbleLayout(Font font, AIAssistantState st, int wx, int wy, int ww, int wh) {
+		int pad = WIN_SIDE_PAD;
+		int maxBubbleW = (int) (ww * 0.70) - BUBBLE_PAD * 2;
+		int wy2 = wy + wh;
+		int ibY = wy2 - INPUT_BOX_H - pad;
+		int loadingStripH = st.state == AIAssistantState.State.WAITING_RESPONSE ? (font.lineHeight + 4) : 0;
+		int msgAreaTop = wy + pad;
+		int msgAreaBottom = ibY - pad - loadingStripH;
 		final int gap = 3;
-		record BubbleSeg(AIAssistantState.Role role, int bw, int bh, List<FormattedCharSequence> lines) {}
 
 		List<AIAssistantState.ChatMessage> history = st.getHistory();
 		List<BubbleSeg> segs = new ArrayList<>();
@@ -896,42 +1127,21 @@ public final class OverlayRenderer {
 		}
 
 		int viewportH = Math.max(0, msgAreaBottom - msgAreaTop);
-		aiChatScrollMax = Math.max(0, totalH - viewportH);
-		st.aiChatScrollPx = Mth.clamp(st.aiChatScrollPx, 0, aiChatScrollMax);
+		int scrollMax = Math.max(0, totalH - viewportH);
+		int clampedScroll = Mth.clamp(st.aiChatScrollPx, 0, scrollMax);
+		int startY = msgAreaBottom - totalH + clampedScroll;
 
-		int startY = msgAreaBottom - totalH + st.aiChatScrollPx;
-
-		gg.enableScissor(wx, msgAreaTop, wx2, msgAreaBottom);
+		List<BubbleLayout> out = new ArrayList<>();
 		int y = startY;
-		for (BubbleSeg seg : segs) {
-			int bubbleH = seg.bh();
-			int bx;
-			if (seg.role() == AIAssistantState.Role.USER) {
-				bx = wx + ww - pad - seg.bw();
-				gg.fill(bx, y, bx + seg.bw(), y + bubbleH, 0xFF1A3A5C);
-				for (int j = 0; j < seg.lines().size(); j++) {
-					gg.text(font, seg.lines().get(j), bx + BUBBLE_PAD,
-						y + BUBBLE_PAD + j * (LINE_H + 1), 0xFFDDEEFF);
-				}
-			} else {
-				bx = wx + pad;
-				gg.fill(bx, y, bx + seg.bw(), y + bubbleH, 0xFF2A2A2A);
-				for (int j = 0; j < seg.lines().size(); j++) {
-					gg.text(font, seg.lines().get(j), bx + BUBBLE_PAD,
-						y + BUBBLE_PAD + j * (LINE_H + 1), 0xFFEEEEEE);
-				}
-			}
-			y += bubbleH + gap;
+		for (int i = 0; i < segs.size(); i++) {
+			BubbleSeg seg = segs.get(i);
+			int bx = seg.role() == AIAssistantState.Role.USER
+				? wx + ww - pad - seg.bw()
+				: wx + pad;
+			out.add(new BubbleLayout(i, history.get(i).role(), history.get(i).text(), bx, y, seg.bw(), seg.bh(), seg.lines()));
+			y += seg.bh() + gap;
 		}
-		gg.disableScissor();
-
-		String inputStr = aiChatInput != null ? aiChatInput.getValue() : "";
-		if (inputStr.length() > MAX_INPUT_CHARS - 50) {
-			String counter = inputStr.length() + "/" + MAX_INPUT_CHARS;
-			int cw = font.width(counter);
-			int textY = ibY + (INPUT_BOX_H - font.lineHeight) / 2;
-			drawTextReflective(gg, font, counter, ibX + ibW - cw - 4, textY, 0xFFFF5555);
-		}
+		return out;
 	}
 
 	// =========================================================================
@@ -1083,24 +1293,59 @@ public final class OverlayRenderer {
 		gg.fill(x + w - 1, y,         x + w,     y + h,         PANEL_BORDER);
 	}
 
-	/** Panel background with a clear rectangle for the vanilla {@link EditBox} to show through. */
+	/** Panel background with clear rectangles for the input box and an optional inline AI bubble editor. */
 	private void drawAiPanelWithHole(GuiGraphicsExtractor gg, int wx, int wy, int ww, int wh,
-			int holeX, int holeY, int holeW, int holeH) {
+			int hole1X, int hole1Y, int hole1W, int hole1H,
+			int hole2X, int hole2Y, int hole2W, int hole2H) {
 		int wx2 = wx + ww;
 		int wy2 = wy + wh;
-		int h2 = holeY + holeH;
-		if (holeY > wy) {
-			gg.fill(wx, wy, wx2, holeY, PANEL_BG);
+
+		int topX = hole1X;
+		int topY = hole1Y;
+		int topW = hole1W;
+		int topH = hole1H;
+		int bottomX = hole2X;
+		int bottomY = hole2Y;
+		int bottomW = hole2W;
+		int bottomH = hole2H;
+		if (bottomH <= 0 || (topH > 0 && topY > bottomY)) {
+			topX = hole2X;
+			topY = hole2Y;
+			topW = hole2W;
+			topH = hole2H;
+			bottomX = hole1X;
+			bottomY = hole1Y;
+			bottomW = hole1W;
+			bottomH = hole1H;
 		}
-		gg.fill(wx, holeY, holeX, h2, PANEL_BG);
-		gg.fill(holeX + holeW, holeY, wx2, h2, PANEL_BG);
-		if (h2 < wy2) {
-			gg.fill(wx, h2, wx2, wy2, PANEL_BG);
+
+		int cursorY = wy;
+		if (topH > 0) {
+			if (topY > cursorY) {
+				gg.fill(wx, cursorY, wx2, topY, PANEL_BG);
+			}
+			int topY2 = topY + topH;
+			gg.fill(wx, topY, topX, topY2, PANEL_BG);
+			gg.fill(topX + topW, topY, wx2, topY2, PANEL_BG);
+			cursorY = topY2;
 		}
-		gg.fill(wx,         wy,         wx2,     wy + 1,         PANEL_BORDER);
-		gg.fill(wx,         wy2 - 1,    wx2,     wy2,           PANEL_BORDER);
-		gg.fill(wx,         wy,         wx + 1,  wy2,           PANEL_BORDER);
-		gg.fill(wx2 - 1,    wy,         wx2,     wy2,           PANEL_BORDER);
+		if (bottomH > 0) {
+			if (bottomY > cursorY) {
+				gg.fill(wx, cursorY, wx2, bottomY, PANEL_BG);
+			}
+			int bottomY2 = bottomY + bottomH;
+			gg.fill(wx, bottomY, bottomX, bottomY2, PANEL_BG);
+			gg.fill(bottomX + bottomW, bottomY, wx2, bottomY2, PANEL_BG);
+			cursorY = bottomY2;
+		}
+		if (cursorY < wy2) {
+			gg.fill(wx, cursorY, wx2, wy2, PANEL_BG);
+		}
+
+		gg.fill(wx,      wy,      wx2,     wy + 1, PANEL_BORDER);
+		gg.fill(wx,      wy2 - 1, wx2,     wy2,    PANEL_BORDER);
+		gg.fill(wx,      wy,      wx + 1,  wy2,    PANEL_BORDER);
+		gg.fill(wx2 - 1, wy,      wx2,     wy2,    PANEL_BORDER);
 	}
 
 	private void drawFakeButton(GuiGraphicsExtractor gg, int x, int y, int w, int h,
@@ -1189,7 +1434,7 @@ public final class OverlayRenderer {
 	// =========================================================================
 	// Helpers — GuiGraphicsExtractor extraction (existing, unchanged)
 	// =========================================================================
-	private static GuiGraphicsExtractor extractGuiGraphicsExtractor(Object graphics) {
+	static GuiGraphicsExtractor extractGuiGraphicsExtractor(Object graphics) {
 		if (graphics instanceof GuiGraphicsExtractor gg) {
 			return gg;
 		}

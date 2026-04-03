@@ -49,6 +49,12 @@
       "examples": ["/time set day", "/time set 18000", "/time add 1000", "/time query gametime"]
     },
     {
+      "command": "/tick",
+      "description": "Control the tick rate, freeze ticking, or fast-forward the game.",
+      "parameters": ["query", "rate <rate>", "freeze|unfreeze", "step [<time>]|step stop", "sprint [<time>]|sprint stop"],
+      "examples": ["/tick query", "/tick rate 30", "/tick freeze", "/tick step 40t", "/tick sprint 5s"]
+    },
+    {
       "command": "/weather",
       "description": "Change the weather in the current dimension.",
       "parameters": ["clear|rain|thunder [duration]"],
@@ -91,6 +97,12 @@
       "examples": ["/team add red", "/team join red @s", "/team option red color red", "/team option red friendlyFire false"]
     },
     {
+      "command": "/teammsg",
+      "description": "Send a private team chat message to members of your team. Alias: /tm.",
+      "parameters": ["<message>"],
+      "examples": ["/teammsg Defend the base!", "/tm Push left side now!"]
+    },
+    {
       "command": "/title",
       "description": "Display large on-screen text (title, subtitle, or actionbar).",
       "parameters": ["<targets> title|subtitle|actionbar <json>", "<targets> times <fadeIn> <stay> <fadeOut>", "<targets> clear|reset"],
@@ -109,6 +121,12 @@
       "examples": ["/say Server restarting in 60 seconds!", "/say Welcome to the server."]
     },
     {
+      "command": "/me",
+      "description": "Send an emote-style message as yourself in chat.",
+      "parameters": ["<action>"],
+      "examples": ["/me waves hello", "/me is preparing the arena"]
+    },
+    {
       "command": "/msg",
       "description": "Send a private message to a player. Aliases: /tell, /w.",
       "parameters": ["<targets> <message>"],
@@ -124,7 +142,7 @@
       "command": "/gamerule",
       "description": "Query or set a game rule. Common rules: keepInventory, doDaylightCycle, doMobSpawning.",
       "parameters": ["<rule> [value]"],
-      "examples": ["/gamerule keepInventory true", "/gamerule doDaylightCycle false", "/gamerule doMobSpawning false", "/gamerule pvp false"]
+      "examples": ["/gamerule keepInventory true", "/gamerule doDaylightCycle false", "/gamerule doMobSpawning false", "/gamerule sendCommandFeedback false"]
     },
     {
       "command": "/difficulty",
@@ -146,9 +164,9 @@
     },
     {
       "command": "/locate",
-      "description": "Find the nearest structure, biome, or point of interest.",
-      "parameters": ["structure <structure>", "biome <biome>", "poi <poi>"],
-      "examples": ["/locate structure village", "/locate structure stronghold", "/locate biome minecraft:desert", "/locate poi minecraft:lodestone"]
+      "description": "Find the nearest structure, biome, or point of interest. Java Edition also supports tags with #.",
+      "parameters": ["structure <structure|#tag>", "biome <biome|#tag>", "poi <poi|#tag>"],
+      "examples": ["/locate structure minecraft:stronghold", "/locate structure #village", "/locate biome minecraft:desert", "/locate poi minecraft:lodestone"]
     },
     {
       "command": "/worldborder",
@@ -165,8 +183,8 @@
     {
       "command": "/loot",
       "description": "Distribute items from a loot table to players or a container.",
-      "parameters": ["give <players> loot|fish|kill|mine <source>", "insert <pos> ..."],
-      "examples": ["/loot give @s loot minecraft:chests/simple_dungeon", "/loot give @p kill minecraft:pig", "/loot insert ~ ~ ~ mine ~ ~-1 ~ minecraft:diamond_pickaxe"]
+      "parameters": ["give <players> loot <loot_table>", "give <players> kill <target>", "insert <pos> ...", "spawn <x y z> ..."],
+      "examples": ["/loot give @s loot minecraft:chests/simple_dungeon", "/loot give @p kill @e[type=pig,limit=1,sort=nearest]", "/loot insert ~ ~ ~ mine ~ ~-1 ~ minecraft:diamond_pickaxe"]
     },
     {
       "command": "/data",
@@ -176,9 +194,9 @@
     },
     {
       "command": "/attribute",
-      "description": "Query or modify entity attribute base values and modifiers.",
-      "parameters": ["<target> <attribute> get [scale]", "<target> <attribute> base get|set <value>", "<target> <attribute> modifier add|remove|value ..."],
-      "examples": ["/attribute @s minecraft:generic.max_health get", "/attribute @s minecraft:generic.max_health base set 40", "/attribute @s minecraft:generic.movement_speed base set 0.15"]
+      "description": "Query or modify entity attribute base values and modifiers using current Java Edition attribute IDs.",
+      "parameters": ["<target> <attribute> get [scale]", "<target> <attribute> base get|set <value>|reset", "<target> <attribute> modifier add <id> <value> <add_value|add_multiplied_base|add_multiplied_total>", "<target> <attribute> modifier remove <id>", "<target> <attribute> modifier value get <id> [scale]"],
+      "examples": ["/attribute @s minecraft:max_health get", "/attribute @s minecraft:max_health base set 40", "/attribute @s minecraft:movement_speed base set 0.15"]
     },
     {
       "command": "/particle",
@@ -214,7 +232,7 @@
       "command": "/recipe",
       "description": "Grant or revoke crafting recipes for players.",
       "parameters": ["give|take <targets> <recipe>|*"],
-      "examples": ["/recipe give @a *", "/recipe take @s minecraft:diamond_sword", "/recipe give @s minecraft:elytra"]
+      "examples": ["/recipe give @a *", "/recipe take @s minecraft:diamond_sword", "/recipe give @s minecraft:bread"]
     },
     {
       "command": "/experience",
@@ -236,9 +254,9 @@
     },
     {
       "command": "/function",
-      "description": "Execute a .mcfunction file from a loaded data pack.",
-      "parameters": ["<namespace:path>"],
-      "examples": ["/function mynamespace:setup", "/function mynamespace:tick", "/function minecraft:load"]
+      "description": "Execute a function or function tag from a loaded data pack.",
+      "parameters": ["<namespace:path|#tag>", "with <block|entity|storage> ..."],
+      "examples": ["/function mynamespace:setup", "/function mynamespace:tick", "/function #minecraft:load"]
     },
     {
       "command": "/schedule",
@@ -255,8 +273,8 @@
     {
       "command": "/item",
       "description": "Replace or modify items in inventories, equipment slots, or containers.",
-      "parameters": ["replace entity|block <target> <slot> with <item> [count]", "modify entity|block <target> <slot> <modifier>"],
-      "examples": ["/item replace entity @s weapon.mainhand with diamond_sword", "/item replace block ~ ~ ~ container.0 with apple 32", "/item replace entity @s armor.head with diamond_helmet"]
+      "parameters": ["modify entity|block <target> <slot> <modifier>", "replace entity|block <target> <slot> with <item> [count]", "replace entity|block <target> <slot> from entity|block <source> <slot> [modifier]"],
+      "examples": ["/item replace entity @s weapon.mainhand with diamond_sword", "/item replace block ~ ~ ~ container.0 with apple 32", "/item replace entity @s armor.head with diamond_helmet", "/item replace entity @s weapon.offhand from entity @s weapon.mainhand"]
     },
     {
       "command": "/ride",
@@ -277,12 +295,6 @@
       "examples": ["/defaultgamemode survival", "/defaultgamemode adventure"]
     },
     {
-      "command": "/difficulty",
-      "description": "Change the world difficulty (affects mob spawning and damage).",
-      "parameters": ["peaceful|easy|normal|hard"],
-      "examples": ["/difficulty peaceful", "/difficulty hard"]
-    },
-    {
       "command": "/ban",
       "description": "Ban a player by username, preventing them from joining.",
       "parameters": ["<player> [reason]"],
@@ -293,6 +305,24 @@
       "description": "Ban an IP address from joining the server.",
       "parameters": ["<address|player> [reason]"],
       "examples": ["/ban-ip 192.168.1.1", "/ban-ip Steve IP ban"]
+    },
+    {
+      "command": "/banlist",
+      "description": "Show the server ban list.",
+      "parameters": ["[ips|players]"],
+      "examples": ["/banlist", "/banlist players", "/banlist ips"]
+    },
+    {
+      "command": "/pardon",
+      "description": "Remove a player from the server ban list.",
+      "parameters": ["<player>"],
+      "examples": ["/pardon Steve", "/pardon Player123"]
+    },
+    {
+      "command": "/pardon-ip",
+      "description": "Remove an IP address from the server ban list.",
+      "parameters": ["<address>"],
+      "examples": ["/pardon-ip 192.168.1.1"]
     },
     {
       "command": "/kick",
@@ -337,6 +367,12 @@
       "examples": ["/debug start", "/debug stop"]
     },
     {
+      "command": "/jfr",
+      "description": "Start or stop Java Flight Recorder profiling.",
+      "parameters": ["start|stop"],
+      "examples": ["/jfr start", "/jfr stop"]
+    },
+    {
       "command": "/perf",
       "description": "Run a 10-second performance report (ops only). Saves a report to disk.",
       "parameters": ["start|stop"],
@@ -346,13 +382,13 @@
       "command": "/forceload",
       "description": "Force specific chunks to stay loaded even without players nearby.",
       "parameters": ["add <from> [to]", "remove <from> [to]|all", "query [pos]"],
-      "examples": ["/forceload add 0 0", "/forceload add ~-2 ~-2 ~2 ~2", "/forceload remove all"]
+      "examples": ["/forceload add 0 0", "/forceload add ~-2 ~-2 ~2 ~2", "/forceload query 0 0", "/forceload remove all"]
     },
     {
       "command": "/place",
       "description": "Place a structure, jigsaw, feature, or template at a location.",
-      "parameters": ["feature|jigsaw|structure|template <id> [x y z]"],
-      "examples": ["/place structure minecraft:village/plains/town_center ~ ~ ~", "/place feature minecraft:desert_well ~ ~ ~"]
+      "parameters": ["feature <id> [x y z]", "jigsaw <pool> <target> <maxDepth> [x y z]", "structure <id> [x y z]", "template <id> [x y z] [rotation] [mirror] [integrity] [seed] [strict]"],
+      "examples": ["/place structure minecraft:stronghold", "/place feature minecraft:desert_well ~ ~ ~"]
     },
     {
       "command": "/fillbiome",
@@ -383,6 +419,60 @@
       "description": "Exit a function early and optionally return a value to the caller.",
       "parameters": ["<value>", "fail|run <command>"],
       "examples": ["/return 1", "/return fail", "/return run give @s apple"]
+    },
+    {
+      "command": "/publish",
+      "description": "Open the current singleplayer world to LAN. Singleplayer only.",
+      "parameters": ["[allowCommands] [gamemode] [port]"],
+      "examples": ["/publish", "/publish true creative", "/publish true survival 25565"]
+    },
+    {
+      "command": "/save-all",
+      "description": "Save player data and world chunks to disk immediately or mark them for saving.",
+      "parameters": ["[flush]"],
+      "examples": ["/save-all", "/save-all flush"]
+    },
+    {
+      "command": "/save-off",
+      "description": "Disable automatic world saving until re-enabled.",
+      "parameters": [],
+      "examples": ["/save-off"]
+    },
+    {
+      "command": "/save-on",
+      "description": "Re-enable automatic world saving after /save-off.",
+      "parameters": [],
+      "examples": ["/save-on"]
+    },
+    {
+      "command": "/setidletimeout",
+      "description": "Set how long idle players can stay connected before being kicked.",
+      "parameters": ["<minutes>"],
+      "examples": ["/setidletimeout 10", "/setidletimeout 0"]
+    },
+    {
+      "command": "/stop",
+      "description": "Stop the server.",
+      "parameters": [],
+      "examples": ["/stop"]
+    },
+    {
+      "command": "/test",
+      "description": "Manage and run GameTests.",
+      "parameters": ["run <tests> [numberOfTimes] [untilFailed] [rotationSteps] [testsPerRow]", "runmultiple <tests>", "runfailed [onlyRequiredTests] [rotationSteps] [testsPerRow] [testsPerBatch]", "clearall [radius]", "clearthat|clearthese", "resetclosest|resetthat|resetthese", "runclosest|runthat|runthese [rotationSteps] [testsPerRow]", "locate <tests>", "pos [var]", "verify <test>", "stop"],
+      "examples": ["/test run mypack:example", "/test runfailed", "/test clearall 100", "/test stop"]
+    },
+    {
+      "command": "/transfer",
+      "description": "Transfer one or more players to another server.",
+      "parameters": ["<hostname> [port] [players]"],
+      "examples": ["/transfer localhost 25565", "/transfer play.example.com 25565 Steve", "/transfer minigames.example.net @a"]
+    },
+    {
+      "command": "/version",
+      "description": "Print the server version information to chat.",
+      "parameters": [],
+      "examples": ["/version"]
     }
   ]
 }
