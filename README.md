@@ -6,8 +6,6 @@ Explore Minecraft commands quickly and easily! Command Helper displays concise c
 
 Hold **Alt** (or any key you set in Keybinds) to show a tooltip at your cursor, which displays information about the command you're trying to run. Info includes what the command will do and its parameters.
 
-## Features coming soon in version 1.2
-
 ### Ask the assistant
 
 In the help window, you'll find an **_Ask Assistant_** button. By entering your own Gemini API key, you can chat directly with the AI in-game to get help with commands and parameters. 
