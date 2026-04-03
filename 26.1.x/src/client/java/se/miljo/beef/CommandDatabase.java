@@ -60,6 +60,43 @@ public final class CommandDatabase {
 		return Optional.ofNullable(entriesByCommand.get(normalizeCommand(token)));
 	}
 
+	/**
+	 * Full sorted dump of commands for the AI system prompt (bounded size).
+	 */
+	public String buildDocumentationForAi() {
+		int maxChars = 120_000;
+		var names = new ArrayList<>(entriesByCommand.keySet());
+		Collections.sort(names);
+		StringBuilder sb = new StringBuilder();
+		for (String key : names) {
+			CommandEntry e = entriesByCommand.get(key);
+			if (e == null) continue;
+			appendEntry(sb, e);
+			if (sb.length() >= maxChars) {
+				sb.append("\n[... documentation truncated at ").append(maxChars).append(" characters ...]");
+				break;
+			}
+		}
+		return sb.toString();
+	}
+
+	private static void appendEntry(StringBuilder sb, CommandEntry e) {
+		sb.append(e.command()).append("\n  ").append(e.description()).append('\n');
+		if (e.parameters() != null && !e.parameters().isEmpty()) {
+			sb.append("  Parameters:\n");
+			for (String p : e.parameters()) {
+				sb.append("    ").append(p).append('\n');
+			}
+		}
+		if (e.examples() != null && !e.examples().isEmpty()) {
+			sb.append("  Examples:\n");
+			for (String ex : e.examples()) {
+				sb.append("    ").append(ex).append('\n');
+			}
+		}
+		sb.append('\n');
+	}
+
 	public static String normalizeCommand(String raw) {
 		String trimmed = raw.trim().toLowerCase(Locale.ROOT);
 		if (!trimmed.startsWith("/")) {

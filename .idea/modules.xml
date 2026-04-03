@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/26.1.x.iml" filepath="$PROJECT_DIR$/.idea/modules/26.1.x.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/26.1.x.client.iml" filepath="$PROJECT_DIR$/.idea/modules/26.1.x.client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/26.1.x.main.iml" filepath="$PROJECT_DIR$/.idea/modules/26.1.x.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/26.1.x.test.iml" filepath="$PROJECT_DIR$/.idea/modules/26.1.x.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/command-helper.iml" filepath="$PROJECT_DIR$/.idea/command-helper.iml" />
+    </modules>
+  </component>
+</project>
