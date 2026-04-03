@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+    "serve": "^14.2.6"
+  },
+  "name": "command-helper",
+  "version": "1.0.0",
+  "description": "<img width=\"1024\" height=\"320\" alt=\"ch_banner\" src=\"https://github.com/user-attachments/assets/de360f8e-4326-4b03-9102-f3ca5c9c68ef\" />",
+  "main": "index.js",
+  "devDependencies": {
+    "vitepress": "^1.6.4"
+  },
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "build:pages": "node ./scripts/build-pages.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/im-theslimeguy/command-helper.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/im-theslimeguy/command-helper/issues"
+  },
+  "homepage": "https://github.com/im-theslimeguy/command-helper#readme"
+}

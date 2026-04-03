@@ -38,3 +38,10 @@ hs_err_*.log
 replay_*.log
 *.hprof
 *.jfr
+
+# web build artifacts
+
+node_modules/
+.pages/
+docs/.vitepress/cache/
+docs/.vitepress/dist/

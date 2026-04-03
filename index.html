@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Command Helper</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <section class="hero" id="top">
+      <div class="hero__backdrop" aria-hidden="true"></div>
+      <div class="hero__content">
+        <img class="hero__title" src="./assets/ch_title_full.png" alt="Command Helper">
+
+        <div class="hero__copy">
+          <h1>Are you lost in the world of Minecraft commands?</h1>
+          <p>
+            Command Helper does exactly that, it helps you. If you hold down your desired key,
+            it'll show important and useful information about the command typed in the textbox.
+          </p>
+          <div class="hero__actions">
+            <mc-button label="Documentation" href="./wiki/"></mc-button>
+          </div>
+        </div>
+      </div>
+
+      <a class="scroll-hint" href="#questions" aria-label="Scroll down">
+        <span>Scroll down</span>
+        <img src="./assets/chevron_down.svg" alt="">
+      </a>
+    </section>
+
+    <section class="info info--blue" id="questions">
+      <div class="info__inner">
+        <div class="section-mark">
+          <img src="./assets/ch_title_full.png" alt="Command Helper">
+        </div>
+
+        <article class="feature feature--right">
+          <h2>Why not just... Google it?</h2>
+          <p>
+            Command Helper itself is Google built in. You've got a whole small wiki for every command
+            found in the game. Why leave the game to search how to summon a blue axolotl on
+            <em class="inline-italic">1.18.2</em>, instead of just holding down <strong class="inline-strong">Alt</strong>
+            and getting the right answer right away?
+          </p>
+        </article>
+
+        <div class="divider" aria-hidden="true"></div>
+
+        <article class="feature feature--right feature--stacked">
+          <h2>But I don't know English!</h2>
+          <div class="feature__text-group">
+            <p>
+              In the help window, there's an Ask Assistant button. You choose your language and AI
+              can explain it based on the detailed documentation given to it by the mod.
+            </p>
+            <strong>It's that easy.</strong>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="info info--green">
+      <div class="info__inner">
+        <div class="section-mark">
+          <img src="./assets/ch_title_full.png" alt="Command Helper">
+        </div>
+
+        <article class="feature feature--left">
+          <h2>You've got a cool mod with its own commands?</h2>
+          <p>
+            Check the ‘Developers’ channel in the mod’s Discord server to see how to help the players
+            understand your mod’s commands. We’d really be proud to have you collaborating with us to
+            help the players, so what are ya' waiting for?
+          </p>
+        </article>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
