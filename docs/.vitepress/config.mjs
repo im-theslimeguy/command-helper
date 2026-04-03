@@ -1,7 +1,8 @@
 const isPagesBuild = process.env.BUILD_TARGET === "pages";
 const repoName = "command-helper";
 const siteRoot = isPagesBuild ? `/${repoName}/` : "/";
-const homeLink = isPagesBuild ? "../" : "/";
+const pagesHomeUrl = `https://im-theslimeguy.github.io/${repoName}/`;
+const homeLink = isPagesBuild ? pagesHomeUrl : "/";
 
 export default {
   lang: "en-US",
