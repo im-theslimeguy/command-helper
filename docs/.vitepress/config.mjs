@@ -9,6 +9,9 @@ export default {
   title: "Command Helper Wiki",
   description: "Documentation for Command Helper.",
   base: `${siteRoot}wiki/`,
+  head: [
+    ["link", { rel: "icon", type: "image/png", href: `${siteRoot}favicon.png` }]
+  ],
   ...(isPagesBuild ? { outDir: "../.pages/wiki" } : {}),
   themeConfig: {
     nav: [

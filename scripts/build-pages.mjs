@@ -20,6 +20,7 @@ async function copyRootSite() {
   await cp(path.join(projectRoot, "main.js"), path.join(outputDir, "main.js"));
   await cp(path.join(projectRoot, "assets"), path.join(outputDir, "assets"), { recursive: true });
   await cp(path.join(projectRoot, "components"), path.join(outputDir, "components"), { recursive: true });
+  await cp(path.join(projectRoot, "favicon.png"), path.join(outputDir, "favicon.png"));
   await writeFile(path.join(outputDir, ".nojekyll"), "");
 }
 
